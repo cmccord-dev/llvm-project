@@ -90,11 +90,11 @@ def : InstRW<[P5600WriteJumpAndLink], (instrs JALX)> {
 def P5600COP0 : SchedWriteRes<[P5600IssueCTISTD, P5600CTISTD]>;
 
 def : InstRW<[P5600COP0], (instrs TLBINV, TLBINVF, TLBP, TLBR, TLBWI, TLBWR,
-                           MFC0, MTC0)>;
+                           MFC0, MTC0, COP0_OP)>;
 
 def P5600COP2 : SchedWriteRes<[P5600IssueCTISTD, P5600CTISTD]>;
 
-def : InstRW<[P5600COP2], (instrs MFC2, MTC2)> {
+def : InstRW<[P5600COP2], (instrs MFC2, MTC2, CFC2, CTC2, COP2_OP)> {
   let Unsupported = 1;
 }
 

@@ -496,7 +496,7 @@ def : InstRW<[GenericWriteCOP0], (instrs DMTC0)>;
 def GenericCOP2 : ProcResource<1> { let BufferSize = 1; }
 def GenericWriteCOPOther : SchedWriteRes<[GenericCOP2]>;
 
-def : InstRW<[GenericWriteCOPOther], (instrs MFC2, MTC2)>;
+def : InstRW<[GenericWriteCOPOther], (instrs MFC2, MTC2, CFC2, CTC2, COP2_OP)>;
 
 def : InstRW<[GenericWriteCOPOther], (instrs DMFC2, DMTC2)>;
 
@@ -522,7 +522,7 @@ def : InstRW<[GenericWriteCOP0Short], (instrs FORK)>;
 // =======================
 
 def : InstRW<[GenericWriteCOP0Short], (instrs HYPCALL, TLBGINV, TLBGINVF, TLBGP,
-                                       TLBGR, TLBGWI, TLBGWR, MFGC0, MFHGC0,
+                                       TLBGR, TLBGWI, TLBGWR, MFGC0, MFHGC0, COP0_OP,
                                        MTGC0, MTHGC0)>;
 
 // MIPS64 Virtualization ASE

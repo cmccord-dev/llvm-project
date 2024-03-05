@@ -658,6 +658,9 @@ bool MipsInstrInfo::HasLoadDelaySlot(const MachineInstr &MI) const {
   case Mips::LWR:
   case Mips::LWL:
     return true;
+  case Mips::MFC2:
+  case Mips::CFC2:
+    return true;
   default:
     return false;
   }

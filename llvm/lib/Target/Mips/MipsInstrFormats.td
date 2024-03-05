@@ -912,6 +912,17 @@ class JALR_HB_FM<bits<6> op> : StdArch {
   let Inst{5-0} = op;
 }
 
+
+class COP_OP_FM<bits<2> cp> : StdArch {
+  bits<32> Inst;
+  bits<25> op;
+
+  let Inst{31-28} = 0x4; // COP0
+  let Inst{27-26} = cp; // COP0
+  let Inst{25} = 1;       // CO
+  let Inst{24-0} = op;     // Operation
+}
+
 class COP0_TLB_FM<bits<6> op> : StdArch {
   bits<32> Inst;
 

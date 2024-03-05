@@ -669,8 +669,10 @@ def SImm32AsmOperandClass
     : SImmAsmOperandClass<32, [SImm32RelaxedAsmOperandClass]>;
 def ConstantUImm26AsmOperandClass
     : ConstantUImmAsmOperandClass<26, [SImm32AsmOperandClass]>;
+def ConstantUImm25AsmOperandClass
+    : ConstantUImmAsmOperandClass<25, [ConstantUImm26AsmOperandClass]>;
 def ConstantUImm20AsmOperandClass
-    : ConstantUImmAsmOperandClass<20, [ConstantUImm26AsmOperandClass]>;
+    : ConstantUImmAsmOperandClass<20, [ConstantUImm25AsmOperandClass]>;
 def ConstantSImm19Lsl2AsmOperandClass : AsmOperandClass {
   let Name = "SImm19Lsl2";
   let RenderMethod = "addImmOperands";
@@ -884,7 +886,7 @@ def uimm_range_2_64 : Operand<i32> {
 }
 
 // Unsigned Operands
-foreach I = {1, 2, 3, 4, 5, 6, 7, 8, 10, 20, 26} in
+foreach I = {1, 2, 3, 4, 5, 6, 7, 8, 10, 20, 25, 26} in
   def uimm # I : Operand<i32> {
     let PrintMethod = "printUImm<" # I # ">";
     let ParserMatchClass =
@@ -2412,9 +2414,9 @@ def PseudoMSUBU : MAddSubPseudo<MSUBU, MipsMSubu, II_MSUBU>,
 
 let AdditionalPredicates = [NotInMicroMips] in {
   def PseudoSDIV : MultDivPseudo<SDIV, ACC64, GPR32Opnd, MipsDivRem, II_DIV,
-                                 0, 1, 1>, ISA_MIPS1_NOT_32R6_64R6;
+                                 0, 0, 1>, ISA_MIPS1_NOT_32R6_64R6;
   def PseudoUDIV : MultDivPseudo<UDIV, ACC64, GPR32Opnd, MipsDivRemU, II_DIVU,
-                                 0, 1, 1>, ISA_MIPS1_NOT_32R6_64R6;
+                                 0, 0, 1>, ISA_MIPS1_NOT_32R6_64R6;
   def RDHWR : MMRel, ReadHardware<GPR32Opnd, HWRegsOpnd>, RDHWR_FM, ISA_MIPS1;
   // TODO: Add '0 < pos+size <= 32' constraint check to ext instruction
   def EXT : MMRel, StdMMR6Rel, ExtBase<"ext", GPR32Opnd, uimm5, uimm5_plus1,
@@ -2435,6 +2437,10 @@ let AdditionalPredicates = [NotInMicroMips] in {
              MFC3OP_FM<0x12, 0, 0>, ISA_MIPS1;
   def MTC2 : MTC3OP<"mtc2", COP2Opnd, GPR32Opnd, II_MTC2>,
              MFC3OP_FM<0x12, 4, 0>, ISA_MIPS1;
+  def CFC2 : MFC3OP<"cfc2", GPR32Opnd, COP2Opnd, II_CFC2>,
+             MFC3OP_FM<0x12, 2, 0>, ISA_MIPS1;
+  def CTC2 : MTC3OP<"ctc2", COP2Opnd, GPR32Opnd, II_CTC2>, 
+             MFC3OP_FM<0x12, 6, 0>, ISA_MIPS1;
 }
 
 class Barrier<string asmstr, InstrItinClass itin = NoItinerary> :
@@ -2517,6 +2523,13 @@ class CacheOp<string instr_asm, Operand MemOpnd,
            !strconcat(instr_asm, "\t$hint, $addr"), [], itin, FrmOther,
            instr_asm> {
   let DecoderMethod = "DecodeCacheOp";
+}
+
+class COP_OP<string asmstr, InstrItinClass itin = NoItinerary> :
+  InstSE<(outs), (ins uimm25:$op), asmstr, [], itin, FrmOther, asmstr>;
+let AdditionalPredicates = [NotInMicroMips] in {
+  def COP0_OP : MMRel, COP_OP<"cop0 $op", II_TLBP>, COP_OP_FM<0>, ISA_MIPS1;
+  def COP2_OP : MMRel, COP_OP<"cop2 $op", II_TLBR>, COP_OP_FM<2>, ISA_MIPS1;
 }
 
 let AdditionalPredicates = [NotInMicroMips] in {
@@ -2827,6 +2840,10 @@ let AdditionalPredicates = [NotInMicroMips] in {
   def : MipsInstAlias<"mfc2 $rt, $rd", (MFC2 GPR32Opnd:$rt, COP2Opnd:$rd, 0), 0>,
         ISA_MIPS1;
   def : MipsInstAlias<"mtc2 $rt, $rd", (MTC2 COP2Opnd:$rd, GPR32Opnd:$rt, 0), 0>,
+        ISA_MIPS1;
+  def : MipsInstAlias<"cfc2 $rt, $rd", (CFC2 GPR32Opnd:$rt, COP2Opnd:$rd, 0), 0>,
+        ISA_MIPS1;
+  def : MipsInstAlias<"ctc2 $rt, $rd", (CTC2 COP2Opnd:$rd, GPR32Opnd:$rt, 0), 0>,
         ISA_MIPS1;
 
   def : MipsInstAlias<"b $offset", (BEQ ZERO, ZERO, brtarget:$offset), 0>,
